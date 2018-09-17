@@ -54,6 +54,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
   //push our new changes to our GitHub repository :
   //git status
   //git add .
+  //git status    //to check the file which have changes are added to commit
   //git commit -m "Add delete script"
   //git push              //default value is origin and default branch is master // i can change origin with heroku for example to push our code to heroku repo and deploy it
 
