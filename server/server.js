@@ -6,11 +6,6 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
-
-//to test our REST API we need to install Mocha for testing ,expect for assertions, supertest for testing Express
-//npm i expect@1.20.2 mocha@3.0.2 nodemon@1.10.2 supertest@2.0.0 --save-dev
-//maybe you will not find all these packages installed in CMD but you will find it inside node_modules and package.json because NPM may cached them and import them directly without installation
-
 var app = express();
 
 app.use(bodyParser.json());
@@ -30,7 +25,19 @@ app.post('/todos', (req, res) => {
 
 })
 
-//commit your code
+
+app.get('/todos', (req, res) => {
+    Todo.find().then( (todos) => {
+      res.send({ todos: todos });  //it's best practise to send the json array to the user inside object which allows us to add another elements if we need it in the future
+        // i can write res.send({ todos }); , ES6 syntax :)
+    }, (e) => {
+      res.status(400).send(e);  //return error object to user
+    });
+});
+
+//commit our new changes to server.js file
+//git status
+//git commit -a -m ""   //-a command adds all new modified files to the next commit -- modified files not new files 
 
 
 app.listen(3000, () => {
