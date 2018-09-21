@@ -1,6 +1,4 @@
-//we need to install express to setup out REST API and body-parser to parse the body of the requests which sent to the server
-//npm i express@4.14.0 body-parser@1.15.2 --save
-//it's recommended to impoort libraries first and then local imports and keep spaces between them
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -8,14 +6,17 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
-//please take care of the new structure of the application
+
+//to test our REST API we need to install Mocha for testing ,expect for assertions, supertest for testing Express
+//npm i expect@1.20.2 mocha@3.0.2 nodemon@1.10.2 supertest@2.0.0 --save-dev
+//maybe you will not find all these packages installed in CMD but you will find it inside node_modules and package.json because NPM may cached them and import them directly without installation
 
 var app = express();
 
-app.use(bodyParser.json());  //this piece of middleware allows object request to has element called "body" contains the json body of the request
+app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-  //console.log(req.body);  //this body property added becuase of app.use(bodyParser.json()); this line
+
 
   var todo = new Todo({
     text: req.body.text
@@ -24,7 +25,7 @@ app.post('/todos', (req, res) => {
   todo.save().then( (doc) => {
     res.send(doc);
   }, (err) => {
-    res.status(400).send(err);  //to see all HTTP status codes : www.httpstatuses.com  //try this filed by pass "text": "" empty in the request
+    res.status(400).send(err);
   });
 
 })
@@ -35,3 +36,5 @@ app.post('/todos', (req, res) => {
 app.listen(3000, () => {
   console.log('Started on port 3000.');
 });
+
+module.exports = {app};
