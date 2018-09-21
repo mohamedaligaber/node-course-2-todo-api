@@ -7,17 +7,6 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
-//deploying to heroku :
-//1)port setup, port = process.env.PORT , this environment variable on heroku server, contains the PORT value which Heroku runs their apps on it
-//2)add start script to package.json file "start": "npm server/server.js", which tells heroku how to deploy our node.js app
-//3)in package.json file there is object called "engines" contains some configurations which heroku uses like node version(v8.11.3)
-//4)now we need to setup the Mongo DB on heroku server, that will be throw "Heroku addons"
-  //4.1) go to heroku.com --> press on any app you deployed before --> click on configure addons --> click on find more addons
-  //--> we will find many addons we want one called "mLab MongoDB" (it integrates our local mongo DB server and Heroku Mongo DB server)
-  //4.2)run command "heroku create" to create new APP
-  //4.3)run command "heroku addons:create mongolab:sandbox"  install addon mongolab and sandbox refers to free plan installation
-  //4.4)run command "heroku config" will return the mongodb url to connect to our mongodb on heroku, but best to use this environment variable "process.env.MONGODB_URI" 
-
 var app = express();
 const port = process.env.PORT || 3000;
 
@@ -75,6 +64,34 @@ app.get('/todos/:id', (req, res) => {
     });
 
 });
+
+
+
+app.delete('/todos/:id', (req, res) => {
+  //get the id
+  var id = req.params.id;
+  //validate id if not valide return 404 with empty res
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+
+  //delete and return todo by id
+  //success
+    //found doc:send back 200 -- with todo as res body
+    //not-found doc: send back 404 -- with empty res body
+  //failed
+      //send back 400 -- with empty res body
+  Todo.findByIdAndRemove(id).then( (todo) => {
+    if(!todo){
+      return res.status(404).send();
+    }
+
+    res.status(200).send({todo});  //this line like res.send({todo}); because the default status_code is 200
+  }).catch( (e) => res.status(400).send() );
+
+});
+
+
 
 //git commit -am "Add GET /todos/:id"    //replace of -a -m --> -am
 //git push
