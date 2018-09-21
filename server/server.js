@@ -28,8 +28,7 @@ app.post('/todos', (req, res) => {
 
 app.get('/todos', (req, res) => {
     Todo.find().then( (todos) => {
-      res.send({ todos: todos });  //it's best practise to send the json array to the user inside object which allows us to add another elements if we need it in the future
-        // i can write res.send({ todos }); , ES6 syntax :)
+      res.send({ todos: todos });
     }, (e) => {
       res.status(400).send(e);  //return error object to user
     });
@@ -37,7 +36,7 @@ app.get('/todos', (req, res) => {
 
 //commit our new changes to server.js file
 //git status
-//git commit -a -m ""   //-a command adds all new modified files to the next commit -- modified files not new files 
+//git commit -a -m ""   //-a command adds all new modified files to the next commit -- modified files not new files
 
 
 app.listen(3000, () => {

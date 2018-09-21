@@ -4,32 +4,38 @@ const request = require('supertest');
 const {app} = require('./../server.js'); //i can remove .js extention
 const {Todo} = require('./../models/todo.js');  //i can remove .js extention
 
-//before each is testing life cycle method run before any test case
 
-beforeEach( (done) => {  // i takes one argument callbackfunction, the callbackfunction takes done as parameter
-  Todo.remove({}).then( () => done() );  //pass empty object to delete function to delete all Documents of Todo collection
+var todos = [{
+    text: "First test todo"
+}, {
+    text: "Second test todo"
+}];
+//here we will delete all todos and add only 2, to allow us to test the returned todos and so on
+beforeEach( (done) => {
+  Todo.remove({}).then( () => {
+      return Todo.insertMany(todos);  //i write return here to allows us to chain the second then()
+  }).then( () => done() );
 });
 
-//group related test cases
+//group related test cases(all test cases for POST /todos)
 describe('POST /todos', () => {
-  it('should create a new todo', (done) => {  //done beacuse http request are async code we need to call done() at end of our code.
+  it('should create a new todo', (done) => {
 
       var text = 'Test todo text';
 
-      request(app)   //path app as argument(the app we want to make request to it)
-      .post('/todos')   //HTTP_METHOD and path of the REST API service
-      .send({text})   // {text} equals to {text: text} it's ES6 syntax, supertest will consider content-type = application/json beacuse of {text}
-      .expect(200)   //expect status code === 200
-      .expect( (res) => {   //custom expect, don't forget custom expects takes function as parameter and the http response is argument to this function
+      request(app)
+      .post('/todos')
+      .send({text})
+      .expect(200)
+      .expect( (res) => {
           expect(res.body.text).toBe(text);
       })
-      .end( (err, res) => {  //i can pass done to end end(done) or pass callbackfunction and to handle errors
+      .end( (err, res) => {
         if(err){
           return done(err);
         }
 
-        //thses test assumes there is not todos in Todos collection, so we will make a work around (before each)
-        Todo.find().then( (todos) => {   //return array of todocs
+        Todo.find({text}).then( (todos) => {
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
@@ -47,16 +53,32 @@ describe('POST /todos', () => {
         .expect(400)
         .end( (err, res) => {
           if(err){
-            return done(err);  //sending err object to done will print it on terminal
+            return done(err);
           }
 
-          Todo.find().then( (todos) => {   //return array of todocs
-            expect(todos.length).toBe(0);
+          Todo.find().then( (todos) => {
+            expect(todos.length).toBe(2);
             done();
           })
           .catch( (e) => done(e) );
 
         });
+    });
+
+});
+
+
+describe('GET /todos', () => {
+
+    //should return the 2 todos which we added in the beforeEach() function
+    it('should get all todos', (done) => {
+        request(app)
+          .get('/todos')
+          .expect(200)
+          .expect( (res) => {
+              expect(res.body.todos.length).toBe(2);
+          })
+          .end(done);
     });
 
 });
