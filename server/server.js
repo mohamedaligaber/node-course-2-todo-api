@@ -64,7 +64,8 @@ app.get('/todos/:id', (req, res) => {
 
 });
 
-//git commit -am ''    //replace of -a -m --> -am  
+//git commit -am "Add GET /todos/:id"    //replace of -a -m --> -am  
+//git push
 
 app.listen(3000, () => {
   console.log('Started on port 3000.');

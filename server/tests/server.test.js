@@ -1,19 +1,22 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server.js'); //i can remove .js extention
 const {Todo} = require('./../models/todo.js');  //i can remove .js extention
 
 
 var todos = [{
+    _id: new ObjectID(),
     text: "First test todo"
 }, {
+    _id: new ObjectID(),
     text: "Second test todo"
 }];
-//here we will delete all todos and add only 2, to allow us to test the returned todos and so on
+
 beforeEach( (done) => {
   Todo.remove({}).then( () => {
-      return Todo.insertMany(todos);  //i write return here to allows us to chain the second then()
+      return Todo.insertMany(todos);
   }).then( () => done() );
 });
 
@@ -82,3 +85,38 @@ describe('GET /todos', () => {
     });
 
 });
+
+describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => {
+      request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)  //toHexString() function to convert ObjectID to string
+        .expect(200)
+        .expect( (res) => {
+          expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    });
+
+    it('should return 404 if todo doc not found', (done) => {
+        var hexId = new ObjectID().toHexString();
+
+        request(app)
+          .get(`/todos/${hexId}`)
+          .expect(404)
+          .expect( (res) => {
+            expect(res.body).toEqual({});
+          })
+          .end(done);
+    });
+
+    it('should return 400 if id object is non-valid', (done) => {
+        request(app)
+          .get('/todos/5ba514fd65a429c842abca9c22334455')
+          .expect(400)
+          .end(done);
+    });
+});
+
+
+//git commit -am 'Add test cases for GET /todos/:id'
+//git push
