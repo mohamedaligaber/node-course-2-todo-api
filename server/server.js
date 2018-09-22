@@ -128,6 +128,8 @@ app.patch('/todos/:id', (req, res) => {
 //git commit -am "Add GET /todos/:id"    //replace of -a -m --> -am
 //git push
 
+//heroku uses only one branch it is the master branch, don't like github which has concept of branching
+
 app.listen(port, () => {
   console.log(`Started on port ${port}.`);
 });
