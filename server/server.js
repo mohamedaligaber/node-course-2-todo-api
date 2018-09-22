@@ -1,14 +1,35 @@
+//this lesson for seperate the development database from test cases and the changes(or wipe) they made to development database
+
+//there are 3 environemnts : test, development and production
+//test environment when i use "test" script of package.json file
+//development environment when i run my app on terminal throw --> node "APP_FULL_PATH.js"
+//production environment when i deploy my app on heroku and heroku uses "start" script of package.json file to run my app on production.
+
+//on production environemnt there is environemnt variable called "NODE_ENV" whcih may has value of "test, development or production"
+//heroku set this environemnt variable "NODE_ENV" to 'production' by default
+//depends on the value of this environemnt variable "NODE_ENV" when can change some configurations like the database connection url and database name
+
+//we will configure this "NODE_ENV" environemnt variable for test environemnt, please see how in "test" script in package
+//this configure will set
+
+//very important node: the changing values of those environemnt variable will be on level of my app only, when my app terminated those-
+//environemnt variables which i changed their values will be deleted
+
+
+require('./config/config.js');  //require the file by this way, will import the code inside it here. 
+
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
+
 
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
