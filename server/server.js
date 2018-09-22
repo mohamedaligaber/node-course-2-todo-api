@@ -1,22 +1,7 @@
-//this lesson for seperate the development database from test cases and the changes(or wipe) they made to development database
+//JWT : is Json Web Tokens, the problem here is any body can hit and access my /todos and /users routes and wipe my database, i want make this action authorized
+//no one can access my API, unless he is has valid token to do this, see how to do this inside playground/hashing.js file
 
-//there are 3 environemnts : test, development and production
-//test environment when i use "test" script of package.json file
-//development environment when i run my app on terminal throw --> node "APP_FULL_PATH.js"
-//production environment when i deploy my app on heroku and heroku uses "start" script of package.json file to run my app on production.
-
-//on production environemnt there is environemnt variable called "NODE_ENV" whcih may has value of "test, development or production"
-//heroku set this environemnt variable "NODE_ENV" to 'production' by default
-//depends on the value of this environemnt variable "NODE_ENV" when can change some configurations like the database connection url and database name
-
-//we will configure this "NODE_ENV" environemnt variable for test environemnt, please see how in "test" script in package
-//this configure will set
-
-//very important node: the changing values of those environemnt variable will be on level of my app only, when my app terminated those-
-//environemnt variables which i changed their values will be deleted
-
-
-require('./config/config.js');  //require the file by this way, will import the code inside it here. 
+require('./config/config.js');  //require the file by this way, will import the code inside it here.
 
 const _ = require('lodash');
 const express = require('express');
@@ -145,6 +130,31 @@ app.patch('/todos/:id', (req, res) => {
 
 });
 
+
+//POST /users
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+
+    var user = new User({
+      email: body.email,
+      password: body.password
+    });   //can make this line simple by write :   var user = new User(body);
+
+    //there are 2 types of methods : 1)User.method() called model method (method related to class)  2)user.method() called intance method (method related to obejct)
+    //we neend to define custom model method, to allows all objects of User Model(class) to access and use this method(reusealilty)
+    //this method will generate user token value of user object, to generate token and save it to the call user object
+
+    user.save().then( (user) => {
+      //  res.status(200).send({user});
+      return user.generateAuthToken();
+    })
+    .then((token) => {
+      res.header('x-auth', token).status(200).send(user);   //i can add custom http response headers
+    })
+    .catch( (err) => {
+        res.status(400).send(err);
+    });
+});
 
 //git commit -am "Add GET /todos/:id"    //replace of -a -m --> -am
 //git push
