@@ -1,4 +1,4 @@
-
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
@@ -91,6 +91,38 @@ app.delete('/todos/:id', (req, res) => {
 
 });
 
+
+//note: i can post todo which deletes todo or post todo which updates todo, but it's best practice and general guidlines
+app.patch('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);  //i don't want to allow user update _id or completedAt fields because these fields should be updated
+  //with us so i filterd the body and get text and completed properties only, now body object should be conatins text and completed elements only if they exist in req.body
+
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+
+  if(_.isBoolean(body.completed)  && body.completed){
+    body.completedAt = new Date().getTime();  //return times with milli seconds from 1/1/1970 12am
+  }else{
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {
+    $set: body  //$set takes an object if key:value paires contains the fieldname:value like body object so we put it as value to $set
+  }, {
+    new: true            //the third and last argument of update funcion is take same options which controls how our update function works
+  })
+  .then( (todo) => {
+      if(!todo){
+          res.status(404).send();
+      }
+
+      res.status(200).send({todo});
+  }).catch( (e) => res.status(400).send() );
+
+});
 
 
 //git commit -am "Add GET /todos/:id"    //replace of -a -m --> -am
