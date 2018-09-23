@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
-
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
   email: {
@@ -58,6 +58,25 @@ UserSchema.methods.generateAuthToken = function(){
 
 
 };
+
+
+//this is a mongoose middleware function runs before any save action on user model
+UserSchema.pre('save', function(next){
+    var user = this;
+
+    //check if the user password is modified we will generate a new hash value to the updated password field
+    if(user.isModified('password')){
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+              user.password = hash;
+              next();
+            });
+        });
+        //next();  if i put the next function here password will not be hashed, almost it's related to function scopes   
+    }else{
+      next();
+    }
+});
 
 //statics "object" is like "methods" object but statics define functions on model level not instance level
 //so i can call this function throw User model not user object
