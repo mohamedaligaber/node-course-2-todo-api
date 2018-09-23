@@ -3,35 +3,19 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-/*
-{
-  email: 'mohamed@example.com',
-  password: 'adafkjadfjdajkfhaj',  //passwords must be stored in DB as hashed value
-  //tokens are array of objects which contains "access" element which contains a value of what i can do like "auth" authentacation and
-  //"token" element contains the value which will allows me to verify you has access to value of "access" element
-  tokens: [{
-      access: "auth",
-      token: "asnfdlkjafddafkjakjdf" // hashed password for example
-  }]
-}
-*/
 
-//Scehma allows us to create something like class wher i can define attributes and functions, not attributes only
 var UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
     minlength: 1,
     trim: true,
-    unique: true,  //check is email not exist in DB  //to allows these changes to occur on the DB we must drop the database and restart the our App
-    //to add email custom validation to check email is in appropiate format, we can search about mongoose custom validation
-    //you can validate email by setup "validator" NPM package which allows us to valiate emails "npm i validator --save"
+    unique: true,
     validate: {
       validator: (value) => {
-        return validator.isEmail(value);  //return true if valid and false if not vaild
+        return validator.isEmail(value);
       },
-      //another simple way "validator: validator.isEmail" it will takes value of email and apply this function on it
-      message: '{VALUE} is not a valid email'  //this message will be thrown as error if this custom validation failed
+      message: '{VALUE} is not a valid email'
     }
   },
   password:{
@@ -49,21 +33,17 @@ var UserSchema = new mongoose.Schema({
       require: true
     }
   }]
-},{
-  usePushEach: true   //mandtory option in the newer versions of mongo db
 });
 
-//this function will return only the fields should return to user, not all fields which exist in user Document
 UserSchema.methods.toJSON = function(){
   var user = this;
-  var userObject = user.toObject();  //toObject() is mongoose function return object with only the fields exist in user Collection
+  var userObject = user.toObject();
 
   return _.pick(userObject, ['_id', 'email']);
 };
 
-UserSchema.methods.generateAuthToken = function(){   //methods is an object conatins the instance methods of our UserSchema, now any User object can access this function.
-  //i assign var user to the user object whihc calls this instance method (like constructor in Java)
-  var user = this;    //i not use arrow function because arrow function don't use this keyword don't forget
+UserSchema.methods.generateAuthToken = function(){
+  var user = this;
   var access = 'auth';
   var token = jwt.sign({ _id: user._id.toHexString(), access }, 'secretvalue').toString();
 
@@ -71,13 +51,37 @@ UserSchema.methods.generateAuthToken = function(){   //methods is an object cona
     access,
     token
   }]);
-  //user.tokens.push(); this line makes confilcts with mongodb so i used the up above line
 
-  return user.save().then( () => {  //return token to the main genrateAuthToken function
+  return user.save().then( () => {
     return token;
   });
 
-  //if the user object model has _id element and it's _id value exists in the DB, and i tried to save it again , it will work like update not save
+
+};
+
+//statics "object" is like "methods" object but statics define functions on model level not instance level
+//so i can call this function throw User model not user object
+UserSchema.statics.findByToken = function(token){
+  var User = this;
+  var decoded;
+
+  try{
+    //verify function return decodes the token and return the original value, i put this function inside try catch block-
+    //because if the token is wrong it will throw error
+    decoded = jwt.verify(token, 'secretvalue');  //now decoded conatins the original vlaue which we have encoded
+  }catch(e){
+    return new Promise( (resolve, reject) => {
+      reject();
+    });  //this return will fire reject function if implemented or catch block
+
+    //return Promise.reject(); works as the up above return statement
+  }
+
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access':  decoded.access  //'auth'   //because it's stored in Collection as array i must search about token with this syntax
+  });   //this will return a promise
 
 };
 
