@@ -138,31 +138,32 @@ app.post('/users', (req, res) => {
 });
 
 
-//new /users/me route after add authenticate middleware function(./middleware/authenticate.js)
-app.get('/users/me', authenticate, (req, res) => {   //pass authenticate function as second arguement means it will be executed before thrid arguement callback function
+app.get('/users/me', authenticate, (req, res) => {
     res.status(200).send(req.user);
 });
 
-//Setup a login route to allows the users to authenticate and send back to them their tokens
-//we will create a model level function in user.js model to findByCredentials by email and password
+
 app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then( (user) => {
-        //res.status(200).send(user);  //here i am not checked is null or not because i checked that inside findByCredentials(), if user is not exist i call
-        //reject() funtion which will fire the catch block here , and if the user exist i will call resolved() inside the Promise which i created in findByCredentials()
-        //which will fire the then() block here.
-
-        //we must return a new token to the user and save it in the users Collection, note : the a token new value generated every login from the user
-        //the token is not reusable it's renewable
          return user.generateAuthToken().then( (token) => {
-            res.header('x-auth', token).send(user);   //if error occured here it will be catched by the last catch block
+            res.header('x-auth', token).send(user);
          });
 
     }).catch( (e) => {
         res.status(400).send();
     });
 
+});
+
+//here is a new route to delete the token of the request user to log him out, first i will call authenticate middleware function to check the user is authenticated
+app.delete('/users/me/token', authenticate, (req, res) => {
+    req.user.deleteToken(req.token).then( () => {    //deleteToken will be instnace method
+        res.status(200).send();
+    }, () => {
+        res.status(400).send();
+    });
 });
 
 app.listen(port, () => {

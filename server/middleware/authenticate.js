@@ -7,7 +7,7 @@ var authenticate = (req, res, next) => {   //any midlleware function must take t
   //this is custom model function which we should implement it.
   User.findByToken(token).then( (user) =>  {    //this method called on model level(User) not instance level(user) because it's general method not like save() method
     if(!user){
-      res.status(401).send();   // 401 HTTP header --> authentication required
+      return Promise.reject();   // 401 HTTP header --> authentication required
       //i can write return Promise.reject();   //this line will fire catch block
     }
 

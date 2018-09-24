@@ -59,6 +59,17 @@ UserSchema.methods.generateAuthToken = function(){
 
 };
 
+UserSchema.methods.deleteToken = function(token){
+    var user = this;
+
+    return user.update({
+      $pull: {   //pull is operator allows us to remove an element from any array(tokens) inside user documnet
+        tokens:{   //the name of the array which i want to delete object from it
+          token: token   //delete any object has element called token = token
+        }
+      }
+    });   //i return a Promise
+};
 
 //this is a mongoose middleware function runs before any save action on user model
 UserSchema.pre('save', function(next){
