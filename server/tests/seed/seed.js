@@ -9,7 +9,7 @@ const userTwoId = new ObjectID();
 
 const users = [{
   _id: userOneId,
-  email: 'mohamed@example.com',
+  email: 'ali@example.com',
   password: 'userOnePass',
   tokens:[{  //filling this array will require us to see the implemntation of generateAuthToken() function in models/user.js
     access: 'auth',
@@ -17,8 +17,8 @@ const users = [{
   }]
 },{
   _id: userTwoId,
-  email: 'ali@example.com',
-  password: 'userTwoPass'
+  email: 'mohamed@example.com',
+  password: 'abc123!'
 }];
 
 const todos = [{

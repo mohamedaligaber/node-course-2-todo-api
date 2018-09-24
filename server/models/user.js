@@ -72,7 +72,7 @@ UserSchema.pre('save', function(next){
               next();
             });
         });
-        //next();  if i put the next function here password will not be hashed, almost it's related to function scopes   
+        //next();  if i put the next function here password will not be hashed, almost it's related to function scopes
     }else{
       next();
     }
@@ -102,6 +102,27 @@ UserSchema.statics.findByToken = function(token){
     'tokens.access':  decoded.access  //'auth'   //because it's stored in Collection as array i must search about token with this syntax
   });   //this will return a promise
 
+};
+
+
+UserSchema.statics.findByCredentials = function(email, password){
+    var User = this;
+
+    return User.findOne({ email }).then( (user) => {
+        if(!user){
+          return Promise.reject();   //here I am syaing to any method call me to run it's "reject" or "catch" block
+        }
+
+        return new Promise( (resolve, reject) => {
+            bcrypt.compare(password, user.password, (error, result) => {
+                if(result){
+                  resolve(user);
+                }else{
+                  reject();
+                }
+            });
+        });
+    });
 };
 
 
