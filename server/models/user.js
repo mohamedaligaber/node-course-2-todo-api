@@ -45,7 +45,7 @@ UserSchema.methods.toJSON = function(){
 UserSchema.methods.generateAuthToken = function(){
   var user = this;
   var access = 'auth';
-  var token = jwt.sign({ _id: user._id.toHexString(), access }, 'secretvalue').toString();
+  var token = jwt.sign({ _id: user._id.toHexString(), access }, process.env.JWT_SECRET).toString();
 
   user.tokens = user.tokens.concat([{
     access,
@@ -98,7 +98,7 @@ UserSchema.statics.findByToken = function(token){
   try{
     //verify function return decodes the token and return the original value, i put this function inside try catch block-
     //because if the token is wrong it will throw error
-    decoded = jwt.verify(token, 'secretvalue');  //now decoded conatins the original vlaue which we have encoded
+    decoded = jwt.verify(token, process.env.JWT_SECRET);  //now decoded conatins the original vlaue which we have encoded
   }catch(e){
     return new Promise( (resolve, reject) => {
       reject();
